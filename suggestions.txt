@@ -1,0 +1,2 @@
+1. removing duplicate entries in ldata
+2. since ldata is sorted, we need not check the entire array to find closest two values

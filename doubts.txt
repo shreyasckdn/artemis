@@ -1,0 +1,13 @@
+if np.sum(image == 254) < 100000
+
+why specifically this contraint to remove images
+
+
+y_test = np_utils.to_categorical(y_testO, len(np.unique(y_testO)))
+
+what if the training set has more classes than test set
+
+example: test set labels [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	training set labels [1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 2, 1, 3, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1]
+
+training set has a 3 but test set doesnt
