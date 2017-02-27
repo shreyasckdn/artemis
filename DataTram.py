@@ -8,7 +8,7 @@ DataTram
 
     Reads the information of the Traffic status from the "dadestram" files
 
-:Authors: bejar
+:Authors: shreyas
     
 
 :Version: 
@@ -17,7 +17,7 @@ DataTram
 
 """
 
-__author__ = 'bejar'
+__author__ = 'shreyas'
 
 
 class DataTram:

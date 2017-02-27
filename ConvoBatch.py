@@ -9,7 +9,7 @@ ConvoBatch
 
 :Description: ConvoBatch
 
-:Authors: bejar
+:Authors: shreyas
 
 :Version: 
 
@@ -19,33 +19,28 @@ ConvoBatch
 
 
 from keras import backend as K
+from keras.optimizers import SGD, Adagrad, Adadelta, Adam
 from SimpleModels import simple_model
-from ConvoTrain import transweights, train_model_batch
-from DataGenerators import list_days_generator
+from ConvoTrain import transweights, detransweights, train_model_batch
+from DataGenerators import list_days_generator, dayGenerator
 from ConvoTrain import load_dataset
-
-import json
-import argparse
-
-__author__ = 'bejar'
+import datetime
+__author__ = 'shreyas'
 
 if __name__ == '__main__':
 
     ldaysTr = list_days_generator(2016, 11, 7, 13)
     ldaysTs = list_days_generator(2016, 12, 1, 2)
-    z_factor = 0.25
-    camera = None  # 'Ronda' #Cameras[0]
-
-    smodel = 3
+    z_factor = 0.35
+    #classweight = {0: 1.0, 1: 1.0, 2: 2.0, 3: 3.0, 4: 4.0}
     classweight = {0: 2.0, 1: 1.0, 2: 4.0, 3: 8.0, 4: 16.0}
-
     config = {
-        'datapath': './data/Datasets/',
+        'datasetpath': './data/Datasets/',
         'savepath': './data/Models/',
         'traindata': ldaysTr,
         'testdata': ldaysTs,
         'rebalanced': False,
-        'zfactor': 0.35,
+        'zfactor': z_factor,
         'model': 4,
         'convolayers':
             {'sizes': [128, 64, 32],
@@ -58,26 +53,55 @@ if __name__ == '__main__':
         'optimizer':
             {'method': 'sdg',
              'params':
-                 {'lrate': 0.005,
+                 {'lrate': 0.0001,
                   'momentum': 0.9,
                   }},
         "train":
             {"batchsize": 256,
-             "epochs": 50,
+             "epochs": 1,
              "classweight": transweights(classweight)},
 
-        'imgord': 'tf'
+        'imgord': 'th'
     }
-
-        # config['optimizer']['params']['decay'] = config['lrate'] / config['epochs']
-
     K.set_image_dim_ordering(config['imgord'])
-
-    _, test, test_labels, num_classes = load_dataset(config, only_test=True, imgord=config['imgord'])
+    config['datasetpath'] += config['imgord']
+    config['datasetpath'] += '/'
+    train, test, test_labels, num_classes = load_dataset(config, only_test=False)
     config['input_shape'] = test[0][0].shape
     config['num_classes'] = num_classes
-
+    classweight = detransweights(config['train']['classweight'])
     model = simple_model(config)
-    print 'begin'
-    train_model_batch(model, config, test, test_labels)
-    print 'end'
+    begin = datetime.datetime.now()
+    #train_model_batch(model, config, test, test_labels)
+    if config['optimizer']['method'] == 'adagrad':
+        optimizer = Adagrad()
+    elif config['optimizer']['method'] == 'adadelta':
+        optimizer = Adadelta()
+    elif config['optimizer']['method'] == 'adam':
+        optimizer = Adam()
+    else:  # default SGD
+        params = config['optimizer']['params']
+        optimizer = SGD(lr=params['lrate'], momentum=params['momentum'], decay=params['lrate'] / params['momentum'],
+                        nesterov=False)
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    model.fit(train[0],train[1], batch_size=config['train']['batchsize'], nb_epoch=config['train']['epochs'], class_weight=classweight,verbose=1)
+    model.save(config['savepath'] + '/model' + '.h5')
+    scores = model.evaluate(test[0], test[1], verbose=0)
+    y_pred = model.predict_classes(test[0], verbose=0)
+    print 'begin %s' % begin
+    print 'end %s' % datetime.datetime.now()
+    print classweight
+    print scores
+    print len(y_pred)
+    ones = 0
+    zeroes = 0
+    for i in range(len(y_pred)):
+        if y_pred[i] == 1:
+            ones += 1
+        elif y_pred[i] == 0:
+            zeroes += 1
+        else:
+            print y_pred[i]
+    print "no of ones %d" % ones
+    print "no of zeroes %d" % zeroes
+    print "----------------------------------------------------------------------------------------------------------------"

@@ -8,7 +8,7 @@ Generate_Dataset
 
     Different functions for Traffic dataset generation
 
-:Authors: bejar
+:Authors: shreyas
     
 
 :Version: 
@@ -23,7 +23,7 @@ import matplotlib.image as mpimg
 import numpy as np
 from PIL import Image
 from Cameras import Cameras_ok
-from Constants import cameras_path, data_path, dataset_path, process_path
+from Constants import dataset_path, process_path
 from Constants import cameras_path, status_path
 from DataTram import DataTram
 from numpy.random import shuffle
@@ -31,7 +31,7 @@ from scipy.ndimage import zoom
 from sklearn.decomposition import IncrementalPCA
 from CamTram import CamTram
 import pickle
-__author__ = 'bejar'
+__author__ = 'shreyas'
 
 
 def get_day_images_data(day, cpatt=None):
@@ -338,7 +338,7 @@ def generate_rebalanced_dataset(ldaysTr, ndays, z_factor, PCA=True, ncomp=100):
     np.save(dataset_path + 'labels-RB-Z%0.2f-C%d.npy' % (z_factor, ncomp), np.array(y_train))
 
 
-def generate_data_day(day, z_factor, method='two', log=False):
+def generate_data_day(imgord, day, z_factor, method='two', log=False):
     """
     Generates a raw dataset for a day with a zoom factor (data and labels)
     :param z_factor:
@@ -370,12 +370,18 @@ def generate_data_day(day, z_factor, method='two', log=False):
                     llabels.append(l)
                     limages.append(day + '/' + str(t) + '-' + cam)
 
-    x_train = np.array(ldata) # using tensorflow( If using Theano, change ordering to 0,3,1,2 )
-    #x_train = x_train.transpose((0,3,1,2))
+    x_train = np.array(ldata)
+    if imgord == 'th':
+        x_train = x_train.transpose((0,3,1,2))
+    savepath = dataset_path
+    if imgord == 'th':
+        savepath += 'th/'
+    else:
+        savepath += 'tf/'
     llabels = [i - 1 for i in llabels]  # change labels from 1-5 to 0-4
-    np.save(dataset_path + 'data-D%s-Z%0.2f.npy' % (day, z_factor), x_train)
-    np.save(dataset_path + 'labels-D%s-Z%0.2f.npy' % (day, z_factor), np.array(llabels))
-    output = open(dataset_path + 'images-D%s-Z%0.2f.pkl' % (day, z_factor), 'wb')
+    np.save(savepath + 'data-D%s-Z%0.2f.npy' % (day, z_factor), x_train)
+    np.save(savepath + 'labels-D%s-Z%0.2f.npy' % (day, z_factor), np.array(llabels))
+    output = open(savepath + 'images-D%s-Z%0.2f.pkl' % (day, z_factor), 'wb')
     pickle.dump(limages, output)
     output.close()
 
@@ -512,11 +518,10 @@ def info_dataset(ldaysTr, z_factor, reb=False):
 
 if __name__ == '__main__':
     days = list_days_generator(2016, 11, 1, 30) + list_days_generator(2016, 12, 1, 2)
-    #days = list_days_generator(2016, 11, 1, 1)
     z_factor = 0.35
-
+    imgord = 'th'
     for day in days:
-        generate_data_day(day, z_factor)
+        generate_data_day(imgord, day, z_factor)
     #
     # for day in days:
     #     generate_splitted_data_day(day, z_factor)

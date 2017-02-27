@@ -17,7 +17,6 @@ Constants
 __author__ = 'bejar'
 
 # Barcelona Data
-data_path = './data/'
 cameras_path = './data/Cameras/'
 status_path = './data/Status/'
 results_path = './data/Results'

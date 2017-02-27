@@ -8,7 +8,7 @@ DataGenerators
 
     
 
-:Authors: bejar
+:Authors: shreyas
     
 
 :Version: 
@@ -17,7 +17,7 @@ DataGenerators
 
 """
 
-__author__ = 'bejar'
+__author__ = 'shreyas'
 
 from numpy.random import shuffle
 import numpy as np
@@ -40,7 +40,7 @@ def list_days_generator(year, month, iday, fday):
     return ldays
 
 
-def load_days(datapath, days, z_factor, reb=False):
+def load_days(dataset_path, days, z_factor, reb=False):
     """
     loads and contatenates files from a list of days
     :param days:
@@ -56,9 +56,9 @@ def load_days(datapath, days, z_factor, reb=False):
         fnamed = 'r' + fnamed
         fnamel = 'r' + fnamel
     for day in days:
-        data = np.load(datapath + fnamed + '-D%s-Z%0.2f.npy' % (day, z_factor))
+        data = np.load(dataset_path + fnamed + '-D%s-Z%0.2f.npy' % (day, z_factor))
         ldata.append(data)
-        labels.extend(np.load(datapath + fnamel + '-D%s-Z%0.2f.npy' % (day, z_factor)))
+        labels.extend(np.load(dataset_path + fnamel + '-D%s-Z%0.2f.npy' % (day, z_factor)))
     data = np.concatenate(ldata)
     return data, labels
 
@@ -115,7 +115,7 @@ def simpleDataGenerator(datapath, days, z_factor, nclasses, batchsize, groups):
                 yield X_train[lperm[i]], y_train[lperm[i]]
 
 
-def dayGenerator(datapath, day, z_factor, nclasses, batchsize, reb=False, imgord='th'):
+def dayGenerator(dataset_path, day, z_factor, nclasses, batchsize, reb=False, imgord='tf'):
     """
     Load the data for a day and returns a random permutation for
     generating the random batches
@@ -126,18 +126,11 @@ def dayGenerator(datapath, day, z_factor, nclasses, batchsize, reb=False, imgord
     :param batchsize:
     :return:
     """
-    data, labels = load_days(datapath, [day], z_factor, reb=reb)
-
-    # Data generated in Theano order
-    # if imgord == 'th':
-    #     x_train = data.transpose((0,3,1,2))
-    # else:
-    #     x_train = data
-
+    data, labels = load_days(dataset_path, [day], z_factor, reb=reb)
     x_train = data
     y_trainO = labels
     y_train = np_utils.to_categorical(y_trainO, nclasses)
-    perm = [i for i in range(x_train.shape[0])]  # so shuffle works on python 3
+    perm = [i for i in range(x_train.shape[0])]
     shuffle(perm)
     lperm = []
     for i in range(0, len(perm), batchsize):
@@ -149,9 +142,10 @@ def dayGenerator(datapath, day, z_factor, nclasses, batchsize, reb=False, imgord
     return x_train, y_train, lperm
 
 if __name__ == '__main__':
-    datapath = './data/Datasets/'
+    '''
+    dataset_path = './data/Datasets/'
     ldays = list_days_generator(2016, 11, 12, 12)
-    gen = simpleDataGenerator(datapath,ldays, 0.35, 5, 100, 5)
+    gen = simpleDataGenerator(dataset_path,ldays, 0.35, 5, 100, 5)
     for d in gen:
         print(d[0])
-
+    '''

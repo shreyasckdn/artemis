@@ -8,7 +8,7 @@ ConvoTrain
 
     
 
-:Authors: bejar
+:Authors: shreyas
     
 
 :Version: 
@@ -17,12 +17,14 @@ ConvoTrain
 
 """
 
-from keras import backend as K
 from keras.optimizers import SGD, Adagrad, Adadelta, Adam
 from keras.utils import np_utils
 from DataGenerators import dayGenerator
 from numpy.random import shuffle
 import numpy as np
+import datetime
+__author__ = 'shreyas'
+
 
 def transweights(weights):
     wtrans = {}
@@ -41,11 +43,10 @@ def detransweights(weights):
 def train_model_batch(model, config, test, test_labels, acctrain=False):
     """
     Trains the model using Keras batch method
-
+    :param test_labels:
     :param model:
     :param config:
     :param test:
-    :param test_labels:
     :return:
     """
 
@@ -75,7 +76,7 @@ def train_model_batch(model, config, test, test_labels, acctrain=False):
 
         # Train Batches
         for day in ldaysTr:
-            x_train, y_train, perm = dayGenerator(config['datapath'], day, config['zfactor'], config['num_classes'], config['train']['batchsize'], reb=reb, imgord=config['imgord'])
+            x_train, y_train, perm = dayGenerator(config['datasetpath'], day, config['zfactor'], config['num_classes'], config['train']['batchsize'], reb=reb, imgord=config['imgord'])
             for p in perm:
                 loss = model.train_on_batch(x_train[p], y_train[p], class_weight=classweight)
                 tloss.append(loss[0])
@@ -89,7 +90,7 @@ def train_model_batch(model, config, test, test_labels, acctrain=False):
             tacc = []
             # Test Batches
             for day in ldaysTr:
-                x_train, y_train, perm = dayGenerator(config['datapath'], day, config['zfactor'], config['num_classes'],
+                x_train, y_train, perm = dayGenerator(config['datasetpath'], day, config['zfactor'], config['num_classes'],
                                                       config['train']['batchsize'], reb=reb, imgord=config['imgord'])
                 for p in perm:
                     loss = model.test_on_batch(x_train[p], y_train[p])
@@ -103,16 +104,15 @@ def train_model_batch(model, config, test, test_labels, acctrain=False):
         logs['val_loss'] = scores[0]
         logs['val_acc'] = scores[1]
         print scores
-        print '%d over' % epoch
-    if config['savepath']:
-        model.save(config['savepath'] + '/model' + '.h5')
+        print '%d over %s' % epoch, datetime.datetime.now()
+    model.save(config['savepath'] + '/model' + '.h5')
     scores = model.evaluate(test[0], test[1], verbose=0)
     y_pred = model.predict_classes(test[0], verbose=0)
     print scores
     print y_pred
 
 
-def load_dataset(config, only_test=False, imgord='tf'):
+def load_dataset(config, only_test=False):
     """
     Loads the train and test dataset
 
@@ -121,32 +121,25 @@ def load_dataset(config, only_test=False, imgord='tf'):
     ldaysTr = config['traindata']
     ldaysTs = config['testdata']
     z_factor = config['zfactor']
-    datapath = config['datapath']
-
+    dataset_path = config['datasetpath']
+    num_classes = 5
     if not only_test:
-        x_train, y_trainO = load_generated_dataset(datapath, ldaysTr, z_factor)
-        # Data already generated in theano order
-        # if imgord == 'th':
-        #     x_train = x_train.transpose((0,3,1,2))
-        y_train = np_utils.to_categorical(y_trainO, 5)
+        x_train, y_trainO = load_generated_dataset(dataset_path, ldaysTr, z_factor)
+        y_train = np_utils.to_categorical(y_trainO, num_classes)
     else:
         x_train = None,
         y_train = None
 
-    x_test, y_testO = load_generated_dataset(datapath, ldaysTs, z_factor)
+    x_test, y_testO = load_generated_dataset(dataset_path, ldaysTs, z_factor)
+    y_test = np_utils.to_categorical(y_testO, num_classes)
 
-    # Data already generated in theano order
-    # if imgord == 'th':
-    #     x_test = x_test.transpose((0,3,1,2))
-    y_test = np_utils.to_categorical(y_testO, 5)
-    num_classes = y_test.shape[1]
     return (x_train, y_train), (x_test, y_test), y_testO, num_classes
 
 
-def load_generated_dataset(datapath, ldaysTr, z_factor):
+def load_generated_dataset(dataset_path, ldaysTr, z_factor):
     """
     Load the already generated datasets
-
+    :param dataset_path:
     :param ldaysTr:
     :param z_factor:
     :return:
@@ -154,8 +147,8 @@ def load_generated_dataset(datapath, ldaysTr, z_factor):
     ldata = []
     y_train = []
     for day in ldaysTr:
-        data = np.load(datapath + 'data-D%s-Z%0.2f.npy' % (day, z_factor))
+        data = np.load(dataset_path + 'data-D%s-Z%0.2f.npy' % (day, z_factor))
         ldata.append(data)
-        y_train.extend(np.load(datapath + 'labels-D%s-Z%0.2f.npy' % (day, z_factor)))
+        y_train.extend(np.load(dataset_path + 'labels-D%s-Z%0.2f.npy' % (day, z_factor)))
     x_train = np.concatenate(ldata)
     return x_train, y_train

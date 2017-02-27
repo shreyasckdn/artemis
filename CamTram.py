@@ -8,7 +8,7 @@ CamTram
 
     Street segment associated to the cameras and name of the segment, the two closest segments are stored
 
-:Authors: bejar
+:Authors: shreyas
     
 
 :Version: 
@@ -17,7 +17,7 @@ CamTram
 
 """
 
-__author__ = 'bejar'
+__author__ = 'shreyas'
 
 
 class CamTram:

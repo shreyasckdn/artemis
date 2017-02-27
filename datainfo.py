@@ -12,7 +12,7 @@ datainfo
     two directions. To select the correct itinerary both directions should be stored, this complicates
     how to select the data of status for the camera.
 
-:Authors: bejar
+:Authors: shreyas
     
 
 :Version: 
@@ -25,7 +25,7 @@ import numpy as np
 
 from Cameras import CamCoord, Cameras
 
-__author__ = 'bejar'
+__author__ = 'shreyas'
 
 
 def euc_dist(c1, c2):

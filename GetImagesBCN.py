@@ -8,7 +8,7 @@ GetImages
 
     
 
-:Authors: bejar
+:Authors: shreyas
     
 
 :Version: 
@@ -22,12 +22,12 @@ import time
 
 import requests
 
-from Utilities.Cameras import Cameras
-from Utilities.Constants import cameras_path, data_path, status_path
-from Utilities.Webservice import inform_webservice
+from Cameras import Cameras
+from Constants import cameras_path, status_path
+from Webservice import inform_webservice
 
 
-__author__ = 'bejar'
+__author__ = 'shreyas'
 
 state = 0
 
