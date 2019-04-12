@@ -1,2 +1,2 @@
-# my_traffoc
+# my_traffic
 Bachelor Thesis
